@@ -6,7 +6,7 @@ all: deps
 		--ldflags="$(SIDE_LDFLAGS)" --host=$(HOSTPYTHONROOT) --target=$(TARGETPYTHONROOT)
 deps:
 	# Temporary workaround to install build dependencies
-	$(HOSTPYTHON) -m pip Cython Tempita
+	$(HOSTPYTHON) -m pip install Cython Tempita
 
 clean:
 	rm -rf ./*/build
