@@ -7,6 +7,7 @@ CPYTHONROOT=cpython
 CPYTHONLIB=$(CPYTHONROOT)/installs/python-$(PYVERSION)/lib/python$(PYMINOR)
 
 LZ4LIB=lz4/lz4-1.8.3/lib/liblz4.a
+LACPACK=packages/scipy/CLAPACK-WA/lapack.la
 
 CC=emcc
 CXX=em++
@@ -212,6 +213,8 @@ $(LZ4LIB):
 $(SIX_LIBS): $(CPYTHONLIB)
 	make -C six
 
+$(LACPACK): $(CPYTHONLIB)
+	emmake make -C packages/scipy/CLAPACK-WA
 
 build/packages.json: $(CPYTHONLIB)
 	make -C packages

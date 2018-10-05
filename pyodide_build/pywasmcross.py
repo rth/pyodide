@@ -184,7 +184,7 @@ def handle_command(line, args):
 
     if os.path.isfile(output):
         print('SKIPPING: ' + ' '.join(new_args))
-        return
+        # return
 
     print(' '.join(new_args))
 
