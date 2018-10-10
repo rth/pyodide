@@ -230,7 +230,8 @@ def install_for_distribution(args):
          'install',
          '--skip-build',
          '--prefix=install',
-         '--old-and-unmanageable'])
+         #'--old-and-unmanageable'
+         ])
 
 
 def build_wrap(args):
