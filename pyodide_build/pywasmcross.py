@@ -224,14 +224,21 @@ def clean_out_native_artifacts():
 
 
 def install_for_distribution(args):
-    subprocess.check_call(
-        [Path(args.host) / 'bin' / 'python3',
+    commands = [
+         Path(args.host) / 'bin' / 'python3',
          'setup.py',
          'install',
          '--skip-build',
          '--prefix=install',
-         #'--old-and-unmanageable'
-         ])
+         '--old-and-unmanageable'
+         ]
+    try:
+        subprocess.check_call(commands)
+    except Exception:
+        # XXX: temporary hack to remove --old-and-unmanageable with distutils
+        #      see https://github.com/iodide-project/pyodide/issues/220
+        #      for a better solution.
+        subprocess.check_call(commands[:-1])
 
 
 def build_wrap(args):

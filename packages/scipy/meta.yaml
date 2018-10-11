@@ -23,7 +23,7 @@ source:
     - patches/skip-scipy-special-_ufuncs.patch
 
 build:
-  cflags: -I/home/rth/src/pyodide/packages/scipy/CLAPACK-WA/INCLUDE -Wno-implicit-function-declaration
+  cflags: -I../../CLAPACK-WA/INCLUDE -Wno-implicit-function-declaration
   cxxflags:
 
 requirements:
