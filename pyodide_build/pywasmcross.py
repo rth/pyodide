@@ -119,7 +119,13 @@ def f2c(args):
             found_source = True
         else:
             new_args.append(arg)
+
+    new_args_str = ' '.join(args)
+    if ".so" in new_args_str and "libgfortran.so" not in new_args_str:
+        found_source = True
+
     if not found_source:
+        print(f'f2c: source not found, skipping: {new_args_str}')
         return None
     return new_args
 
