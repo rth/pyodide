@@ -106,15 +106,30 @@ def capture_compile(args):
         sys.exit(result.returncode)
 
 
-def f2c(args):
+def f2c(args, pretend=False):
+    """Apply f2c to compilation arguments
+
+    Parameters
+    ----------
+    args : iterable
+       input compiler arguments
+    pretend : bool, default=True
+       if False run f2c on detected fortran files
+
+    Returns
+    -------
+    new_args : list
+       output compiler arguments
+    """
     new_args = []
     found_source = False
     for arg in args:
         if arg.endswith('.f'):
             filename = os.path.abspath(arg)
-            subprocess.check_call(
-                ['f2c', os.path.basename(filename)],
-                cwd=os.path.dirname(filename))
+            if not pretend:
+                subprocess.check_call(
+                    ['f2c', os.path.basename(filename)],
+                    cwd=os.path.dirname(filename))
             new_args.append(arg[:-2] + '.c')
             found_source = True
         else:
