@@ -7,13 +7,14 @@ CPYTHONROOT=cpython
 CPYTHONLIB=$(CPYTHONROOT)/installs/python-$(PYVERSION)/lib/python$(PYMINOR)
 
 LZ4LIB=lz4/lz4-1.8.3/lib/liblz4.a
-LAPACK=packages/scipy/CLAPACK-WA/lapack_WA.bc
+LAPACK_DIR=packages/scipy/CLAPACK-WA/
 
 CC=emcc
 CXX=em++
 OPTFLAGS=-O3
 CFLAGS=$(OPTFLAGS) -g -I$(PYTHONINCLUDE) -Wno-warn-absolute-paths
 CXXFLAGS=$(CFLAGS) -std=c++14
+
 
 # __ZNKSt3__220__vector_base_commonILb1EE20__throw_length_errorEv is in
 # EXPORTED_FUNCTIONS to keep the C++ standard library in the core, even though
@@ -213,12 +214,26 @@ $(LZ4LIB):
 $(SIX_LIBS): $(CPYTHONLIB)
 	make -C six
 
-$(LAPACK): $(CPYTHONLIB)
-	emmake make -C packages/scipy/CLAPACK-WA
+clapack: $(CPYTHONLIB)
+	# Horrible hacks to build BLAS/LAPACK both for the host and target.
+	# Using the cmake build with emconfigure cmake might be cleaner.
+	# Build BLAS/LAPACK for host: this produces libblas_WA.so liblapack_WA.so
+	make -C $(LAPACK_DIR) cleanall
+	git -C $(LAPACK_DIR) checkout master
+	make -C $(LAPACK_DIR)
+	# # Build BLAS/LAPACK for target: this produces blas_WA.bc lapack_WA.bc
+	rm -f $(LAPACK_DIR)F2CLIBS/libf2c/arith.h
+	git -C $(LAPACK_DIR) checkout wasm
+	make -C $(LAPACK_DIR) cleanall
+	make -C $(LAPACK_DIR)F2CLIBS/libf2c/ arith.h
+	emmake make -C $(LAPACK_DIR)
+	emcc $(SIDE_LDFLAGS) $(LAPACK_DIR)/build/target/libblas_WA.bc  \
+		$(LAPACK_DIR)/build/target/libf2c.bc -o $(LAPACK_DIR)/build/target/libblas_WA.so
+	emcc $(SIDE_LDFLAGS) $(LAPACK_DIR)/build/target/liblapack_WA.bc \
+		$(LAPACK_DIR)/build/target/libf2c.bc -o $(LAPACK_DIR)/build/target/liblapack_WA.so
 
 build/packages.json: $(CPYTHONLIB)
 	make -C packages
-
 
 emsdk/emsdk/.complete:
 	make -C emsdk

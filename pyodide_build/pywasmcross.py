@@ -201,6 +201,9 @@ def handle_command(line, args):
         elif shared and arg.endswith('.so'):
             arg = arg[:-3] + '.wasm'
             output = arg
+
+        if arg.startswith('-L') and 'CLAPACK-WA/build/host' in arg:
+            arg = arg.replace('host', 'target')
         new_args.append(arg)
 
     if os.path.isfile(output):
