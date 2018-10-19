@@ -218,19 +218,17 @@ clapack: $(CPYTHONLIB)
 	# Horrible hacks to build BLAS/LAPACK both for the host and target.
 	# Using the cmake build with emconfigure cmake might be cleaner.
 	# Build BLAS/LAPACK for host: this produces libblas_WA.so liblapack_WA.so
+	git -C $(LAPACK_DIR) checkout host-static
 	make -C $(LAPACK_DIR) cleanall
-	git -C $(LAPACK_DIR) checkout master
 	make -C $(LAPACK_DIR)
-	# Build BLAS/LAPACK for target: this produces blas_WA.bc lapack_WA.bc
+	## Build BLAS/LAPACK for target: this produces blas_WA.bc lapack_WA.bc
 	rm -f $(LAPACK_DIR)F2CLIBS/libf2c/arith.h
 	git -C $(LAPACK_DIR) checkout wasm
 	make -C $(LAPACK_DIR) cleanall
 	make -C $(LAPACK_DIR)F2CLIBS/libf2c/ arith.h
 	emmake make -C $(LAPACK_DIR)
-	emcc $(SIDE_LDFLAGS) $(LAPACK_DIR)/blas_WA.bc -o $(LAPACK_DIR)/libblas_WA.wasm
-	emcc $(SIDE_LDFLAGS) $(LAPACK_DIR)/lapack_WA.bc -o $(LAPACK_DIR)/liblapack_WA.wasm
 
-build/packages.json: $(CPYTHONLIB)
+build/packages.json: $(CPYTHONLIB) clapack
 	make -C packages
 
 emsdk/emsdk/.complete:

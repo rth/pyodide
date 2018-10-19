@@ -180,6 +180,8 @@ def handle_command(line, args):
     elif new_args[0] in ('emcc', 'em++'):
         new_args.extend(args.cflags.split())
 
+    lapack_dir = None
+
     # Go through and adjust arguments
     for arg in line[1:]:
         if arg.startswith('-I'):
@@ -201,6 +203,15 @@ def handle_command(line, args):
         elif shared and arg.endswith('.so'):
             arg = arg[:-3] + '.wasm'
             output = arg
+        # Fix for scipy to link to the correct BLAS/LAPACK files
+        if arg.startswith('-L') and 'CLAPACK-WA/build/host' in arg:
+            lapack_dir = arg.replace('host', 'target').replace('-L', '')
+            continue
+        # Include the BLAS/LAPACK .bc files when linking
+        if (arg in ['-lf2c', '-lblas_WA', '-llapack_WA']
+                and lapack_dir is not None):
+            arg = os.path.join(lapack_dir, f"lib{arg.replace('-l', '')}.bc")
+
         new_args.append(arg)
 
     if os.path.isfile(output):

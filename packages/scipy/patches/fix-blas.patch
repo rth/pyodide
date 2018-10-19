@@ -1,11 +1,11 @@
-commit 9081ef3a82bd5a3f3533afc65a062e7d49c27b14
+commit eaac5434df2d35b5dae779268c333e19019b9efa
 Author: Roman Yurchak <rth.yurchak@pm.me>
 Date:   Mon Oct 8 10:53:11 2018 +0200
 
     Partial fixes for BLAS/LAPACK
 
 diff --git a/scipy/linalg/setup.py b/scipy/linalg/setup.py
-index 2c9b9ba22..94324172d 100755
+index 2c9b9ba22..89ea2bae6 100755
 --- a/scipy/linalg/setup.py
 +++ b/scipy/linalg/setup.py
 @@ -14,7 +14,13 @@ def configuration(parent_package='', top_path=None):
@@ -14,9 +14,9 @@ index 2c9b9ba22..94324172d 100755
  
 -    lapack_opt = get_info('lapack_opt')
 +    # lapack_opt = get_info('lapack_opt')
-+    lapack_opt = {'libraries': ['lapack_WA', 'blas_WA'],
++    lapack_opt = {'libraries': ['f2c', 'blas_WA', 'lapack_WA'],
 +                  'include_dirs': [],
-+                  'library_dirs': ['../../CLAPACK-WA/'],
++                  'library_dirs': ['../../CLAPACK-WA/build/host/'],
 +                  'language': 'c',
 +                  'define_macros': [('NO_ATLAS_INFO', 1),
 +                                    ('HAVE_CBLAS', None)]}
@@ -24,7 +24,7 @@ index 2c9b9ba22..94324172d 100755
      if not lapack_opt:
          raise NotFoundError('no lapack/blas resources found')
 diff --git a/scipy/sparse/linalg/eigen/arpack/setup.py b/scipy/sparse/linalg/eigen/arpack/setup.py
-index a8175a9d5..a15a33675 100755
+index a8175a9d5..a395c906b 100755
 --- a/scipy/sparse/linalg/eigen/arpack/setup.py
 +++ b/scipy/sparse/linalg/eigen/arpack/setup.py
 @@ -11,7 +11,14 @@ def configuration(parent_package='',top_path=None):
@@ -34,9 +34,9 @@ index a8175a9d5..a15a33675 100755
 -    lapack_opt = get_info('lapack_opt')
 +    # lapack_opt = get_info('lapack_opt')
 +
-+    lapack_opt = {'libraries': ['lapack_WA', 'blas_WA'],
++    lapack_opt = {'libraries': ['f2c', 'blas_WA', 'lapack_WA'],
 +                  'include_dirs': [],
-+                  'library_dirs': ['../../CLAPACK-WA/'],
++                  'library_dirs': ['../../CLAPACK-WA/build/host'],
 +                  'language': 'c',
 +                  'define_macros': [('NO_ATLAS_INFO', 1),
 +                                    ('HAVE_CBLAS', None)]}
@@ -44,7 +44,7 @@ index a8175a9d5..a15a33675 100755
      if not lapack_opt:
          raise NotFoundError('no lapack/blas resources found')
 diff --git a/scipy/sparse/linalg/isolve/setup.py b/scipy/sparse/linalg/isolve/setup.py
-index becb9237a..e6deda6ca 100755
+index becb9237a..5b40168f4 100755
 --- a/scipy/sparse/linalg/isolve/setup.py
 +++ b/scipy/sparse/linalg/isolve/setup.py
 @@ -11,7 +11,13 @@ def configuration(parent_package='',top_path=None):
@@ -53,9 +53,9 @@ index becb9237a..e6deda6ca 100755
  
 -    lapack_opt = get_info('lapack_opt')
 +    # lapack_opt = get_info('lapack_opt')
-+    lapack_opt = {'libraries': ['lapack_WA', 'blas_WA'],
++    lapack_opt = {'libraries': ['f2c', 'blas_WA', 'lapack_WA'],
 +                  'include_dirs': [],
-+                  'library_dirs': ['../../CLAPACK-WA/'],
++                  'library_dirs': ['../../CLAPACK-WA/build/host/'],
 +                  'language': 'c',
 +                  'define_macros': [('NO_ATLAS_INFO', 1),
 +                                    ('HAVE_CBLAS', None)]}
