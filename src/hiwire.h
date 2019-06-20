@@ -14,6 +14,8 @@
  * object. There may be one or more keys pointing to the same object.
  */
 
+#define HW_ERROR -1
+
 /**
  * Initialize the variables and functions required for hiwire.
  */
@@ -106,6 +108,94 @@ hiwire_string_ascii(int ptr);
  */
 int
 hiwire_bytes(int ptr, int len);
+
+/**
+ * Create a new Javascript Int8Array, given a pointer to a buffer and a
+ * length, in bytes.
+ *
+ * The array's data is not copied.
+ *
+ * Returns: New reference
+ */
+int
+hiwire_int8array(int ptr, int len);
+
+/**
+ * Create a new Javascript Uint8Array, given a pointer to a buffer and a
+ * length, in bytes.
+ *
+ * The array's data is not copied.
+ *
+ * Returns: New reference
+ */
+int
+hiwire_uint8array(int ptr, int len);
+
+/**
+ * Create a new Javascript Int16Array, given a pointer to a buffer and a
+ * length, in bytes.
+ *
+ * The array's data is not copied.
+ *
+ * Returns: New reference
+ */
+int
+hiwire_int16array(int ptr, int len);
+
+/**
+ * Create a new Javascript Uint16Array, given a pointer to a buffer and a
+ * length, in bytes.
+ *
+ * The array's data is not copied.
+ *
+ * Returns: New reference
+ */
+int
+hiwire_uint16array(int ptr, int len);
+
+/**
+ * Create a new Javascript Int32Array, given a pointer to a buffer and a
+ * length, in bytes.
+ *
+ * The array's data is not copied.
+ *
+ * Returns: New reference
+ */
+int
+hiwire_int32array(int ptr, int len);
+
+/**
+ * Create a new Javascript Uint32Array, given a pointer to a buffer and a
+ * length, in bytes.
+ *
+ * The array's data is not copied.
+ *
+ * Returns: New reference
+ */
+int
+hiwire_uint32array(int ptr, int len);
+
+/**
+ * Create a new Javascript Float32Array, given a pointer to a buffer and a
+ * length, in bytes.
+ *
+ * The array's data is not copied.
+ *
+ * Returns: New reference
+ */
+int
+hiwire_float32array(int ptr, int len);
+
+/**
+ * Create a new Javascript Float64Array, given a pointer to a buffer and a
+ * length, in bytes.
+ *
+ * The array's data is not copied.
+ *
+ * Returns: New reference
+ */
+int
+hiwire_float64array(int ptr, int len);
 
 /**
  * Create a new Javascript undefined value.
@@ -257,6 +347,13 @@ void
 hiwire_delete_member_obj(int idobj, int ididx);
 
 /**
+ * Get the methods on an object, both on itself and what it inherits.
+ *
+ */
+int
+hiwire_dir(int idobj);
+
+/**
  * Call a function
  *
  * idargs is a hiwire Array containing the arguments.
@@ -359,10 +456,16 @@ hiwire_greater_than_equal(int ida, int idb);
 /**
  * Calls the `next` function on an iterator.
  *
- * Returns: -1 if `next` function is undefined.
+ * Returns: HW_ERROR if `next` function is undefined.
  */
 int
 hiwire_next(int idobj);
+
+/**
+ * Returns the iterator associated with the given object, if any.
+ */
+int
+hiwire_get_iterator(int idobj);
 
 /**
  * Returns 1 if the value is non-zero.
@@ -426,5 +529,11 @@ hiwire_copy_to_ptr(int idobj, int ptr);
  */
 int
 hiwire_get_dtype(int idobj);
+
+/**
+ * Get a subarray from a TypedArray
+ */
+int
+hiwire_subarray(int idarr, int start, int end);
 
 #endif /* HIWIRE_H */

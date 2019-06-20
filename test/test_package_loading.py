@@ -1,4 +1,7 @@
 import pytest
+import shutil
+import re
+from pathlib import Path
 
 
 @pytest.mark.parametrize('active_server', ['main', 'secondary'])
@@ -103,3 +106,77 @@ def test_load_packages_sequential(selenium_standalone, packages):
     # ('pyparsing' and 'matplotlib')
     assert selenium.logs.count(f'Loading {packages[0]}') == 1
     assert selenium.logs.count(f'Loading {packages[1]}') == 1
+
+
+def test_different_ABI(selenium_standalone):
+    url = selenium_standalone.server_hostname
+    port = selenium_standalone.server_port
+
+    build_dir = Path(__file__).parent.parent / 'build'
+
+    original_file = open('build/numpy.js', 'r+')
+    original_contents = original_file.read()
+    original_file.close()
+
+    modified_contents = re.sub(r'checkABI\(\d+\)', 'checkABI(-1)',
+                               original_contents)
+    modified_file = open('build/numpy-broken.js', 'w+')
+    modified_file.write(modified_contents)
+    modified_file.close()
+
+    try:
+        selenium_standalone.load_package(
+            f'http://{url}:{port}/numpy-broken.js'
+        )
+        assert 'ABI numbers differ.' in selenium_standalone.logs
+    finally:
+        (build_dir / 'numpy-broken.js').unlink()
+
+    selenium_standalone.load_package('kiwisolver')
+    selenium_standalone.run('import kiwisolver')
+    assert (
+        selenium_standalone.run('repr(kiwisolver)') ==
+        "<module 'kiwisolver' from "
+        "'/lib/python3.7/site-packages/kiwisolver.so'>"
+    )
+
+
+def test_load_handle_failure(selenium_standalone):
+    selenium = selenium_standalone
+    selenium.load_package('pytz')
+    selenium.run('import pytz')
+    selenium.load_package('pytz2')
+    selenium.load_package('pyparsing')
+    assert 'Loading pytz' in selenium.logs
+    assert 'Loading pytz2' in selenium.logs
+    assert "Unknown package 'pytz2'" in selenium.logs
+    assert "Couldn't load package from URL" in selenium.logs
+    assert 'Loading pyparsing' in selenium.logs  # <- this fails
+
+
+def test_load_package_unknown(selenium_standalone):
+    url = selenium_standalone.server_hostname
+    port = selenium_standalone.server_port
+
+    build_dir = Path(__file__).parent.parent / 'build'
+    shutil.copyfile(
+        build_dir / 'pyparsing.js',
+        build_dir / 'pyparsing-custom.js'
+    )
+    shutil.copyfile(
+        build_dir / 'pyparsing.data',
+        build_dir / 'pyparsing-custom.data'
+    )
+
+    try:
+        selenium_standalone.load_package(
+            f'http://{url}:{port}/pyparsing-custom.js'
+        )
+    finally:
+        (build_dir / 'pyparsing-custom.js').unlink()
+        (build_dir / 'pyparsing-custom.data').unlink()
+
+    assert selenium_standalone.run_js(
+        "return window.pyodide.loadedPackages."
+        "hasOwnProperty('pyparsing-custom')"
+    )

@@ -27,7 +27,6 @@ from js import ImageData
 
 interactive(True)
 
-
 class FigureCanvasWasm(backend_agg.FigureCanvasAgg):
     supports_blit = False
 
@@ -38,6 +37,41 @@ class FigureCanvasWasm(backend_agg.FigureCanvasAgg):
         self._id = "matplotlib_" + hex(id(self))[2:]
         self._title = ''
         self._ratio = 1
+        matplotlib_figure_styles = self._add_matplotlib_styles()
+        if document.getElementById('matplotlib-figure-styles') is None:
+            document.head.appendChild(matplotlib_figure_styles)
+
+    def _add_matplotlib_styles(self):
+        toolbar_buttons_css_content = """
+            button.matplotlib-toolbar-button {
+                font-size: 14px;
+                color: #495057;
+                text-transform: uppercase;
+                background: #e9ecef;
+                padding: 9px 18px;
+                border: 1px solid #fff;
+                border-radius: 4px;
+                transition-duration: 0.4s;
+            }
+
+            button.matplotlib-toolbar-button#text {
+                font-family: -apple-system, BlinkMacSystemFont, 
+                "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, 
+                "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, 
+                sans-serif, "Apple Color Emoji", "Segoe UI Emoji", 
+                "Segoe UI Symbol";
+            }
+
+            button.matplotlib-toolbar-button:hover {
+                color: #fff;
+                background: #495057;
+            }
+        """
+        toolbar_buttons_style_element = document.createElement('style')
+        toolbar_buttons_style_element.id = 'matplotlib-figure-styles'
+        toolbar_buttons_css = document.createTextNode(toolbar_buttons_css_content)
+        toolbar_buttons_style_element.appendChild(toolbar_buttons_css)
+        return toolbar_buttons_style_element
 
     def get_element(self, name):
         """
@@ -56,21 +90,24 @@ class FigureCanvasWasm(backend_agg.FigureCanvasAgg):
         This is typically 2 on a HiDPI ("Retina") display, and 1 otherwise.
         """
         backing_store = (
-            context.backingStorePixelRatio or
-            context.webkitBackingStorePixel or
-            context.mozBackingStorePixelRatio or
-            context.msBackingStorePixelRatio or
-            context.oBackingStorePixelRatio or
-            context.backendStorePixelRatio or
+            getattr(context, 'backingStorePixelRatio', 0) or
+            getattr(context, 'webkitBackingStorePixel', 0) or
+            getattr(context, 'mozBackingStorePixelRatio', 0) or
+            getattr(context, 'msBackingStorePixelRatio', 0) or
+            getattr(context, 'oBackingStorePixelRatio', 0) or
+            getattr(context, 'backendStorePixelRatio', 0) or
             1
         )
-        return (window.devicePixelRatio or 1) / backing_store
+        return (getattr(window, 'devicePixelRatio', 0) or 1) / backing_store
 
     def create_root_element(self):
         # Designed to be overridden by subclasses for use in contexts other
         # than iodide.
-        from js import iodide
-        return iodide.output.element('div')
+        try:
+            from js import iodide
+            return iodide.output.element('div')
+        except ImportError:
+            return document.createElement('div')
 
     def show(self):
         # If we've already shown this canvas elsewhere, don't create a new one,
@@ -98,7 +135,10 @@ class FigureCanvasWasm(backend_agg.FigureCanvasAgg):
         width *= self._ratio
         height *= self._ratio
         div = self.create_root_element()
-        div.setAttribute('style', 'width: {}px'.format(width / self._ratio))
+        div.setAttribute(
+            'style', 'margin: 0 auto; text-align: center;' +
+            'width: {}px'.format(width / self._ratio)
+        )
         div.id = self._id
 
         # The top bar
@@ -449,6 +489,7 @@ class NavigationToolbar2Wasm(backend_bases.NavigationToolbar2):
                     button = document.createElement('button')
                     button.classList.add('fa')
                     button.classList.add(_FONTAWESOME_ICONS[image_file])
+                    button.classList.add('matplotlib-toolbar-button')
                     button.addEventListener(
                         'click', getattr(self, name_of_method))
                     div.appendChild(button)
@@ -457,6 +498,8 @@ class NavigationToolbar2Wasm(backend_bases.NavigationToolbar2):
             button = document.createElement('button')
             button.classList.add('fa')
             button.textContent = format
+            button.classList.add('matplotlib-toolbar-button')
+            button.id = 'text'
             button.addEventListener(
                 'click', self.ondownload)
             div.appendChild(button)

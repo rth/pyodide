@@ -1,7 +1,11 @@
 # Test modules with a failure reason after their name are either skipped
 # or marked as a known failure in pytest.
 #
-# Following reason codes are skipped:
+# Following reason codes are skipped, as they lead to segfaults:
+# - segfault-<syscall>: segfault in the corresponding system call.
+#
+# While the below reason codes are marked as a known failure. By default, they
+# are also skipped. To run them, provide --run-xfail argument to pytest,
 # - platform-specific: This is testing something about a particular platform
 #   that isn't relevant here
 # - async: relies on async
@@ -15,16 +19,14 @@
 #   whole module.
 # - networking: Fails because it tests low-level networking.
 # - dbm: Failures due to no dbm module
-# - _lsprof: Failures due to no _lsprof module
 # - strftime: Failures due to differences / shortcomings in WebAssembly's
 #   implementation of date/time formatting in strftime and strptime
 # - permissions: Issues with the test writing to the virtual filesystem
 # - locale: Fails due to limitations in the included locale implementation.
 # - multiprocessing: Fails due to no multiprocessing implementation.
+# - fs: Fails due to virtual filesystem issues.
 # - nonsense: This functionality doesn't make sense in this context. Includes
 #   things like `pip`, `distutils`
-#
-# While the below reason codes are marked as a known failure:
 # - crash: The Python interpreter just stopped without a traceback. Will require
 #   further investigation. This usually seems to be caused by calling into a
 #   system function that doesn't behave as one would expect.
@@ -49,19 +51,19 @@ test_asyncio.test_base_events async
 test_asyncio.test_events      async
 test_asyncio.test_futures     async
 test_asyncio.test_locks       async
-test_asyncio.test_pep492      async
-test_asyncio.test_proactor_events async
-test_asyncio.test_queues          async
-test_asyncio.test_selector_events async
-test_asyncio.test_sslproto        async
+test_asyncio.test_pep492
+test_asyncio.test_proactor_events
+test_asyncio.test_queues
+test_asyncio.test_selector_events async segfault-socketcall
+test_asyncio.test_sslproto
 test_asyncio.test_streams         async
 test_asyncio.test_subprocess      async
 test_asyncio.test_tasks           async
-test_asyncio.test_transports      async
+test_asyncio.test_transports
 test_asyncio.test_unix_events     async
-test_asyncio.test_windows_events  async
-test_asyncio.test_windows_utils   async
-test_asyncore bad ioctl syscall   async
+test_asyncio.test_windows_events
+test_asyncio.test_windows_utils
+test_asyncore bad ioctl syscall async
 test_atexit
 test_audioop  audioop
 test_augassign
@@ -91,7 +93,7 @@ test_class
 test_cmath
 test_cmd
 test_cmd_line
-test_cmd_line_script  subprocess
+test_cmd_line_script
 test_code
 test_code_module
 test_codeccallbacks
@@ -123,15 +125,15 @@ test_contextlib_async async
 test_copy
 test_copyreg  dbm
 test_coroutines async
-test_cprofile _lsprof
+test_cprofile
 test_crashers
 test_crypt
 test_csv
 test_ctypes
 test_curses
 test_dataclasses
-test_datetime strftime
-test_dbm      permissions
+test_datetime
+test_dbm
 test_dbm_dumb permissions
 test_dbm_gnu
 test_dbm_ndbm
@@ -148,7 +150,7 @@ test_dictcomps
 test_dictviews
 test_difflib
 test_dis
-test_distutils crash
+test_distutils nonsense
 test_doctest   subprocess
 test_doctest2
 test_docxmlrpc  socket
@@ -157,7 +159,7 @@ test_dummy_thread
 test_dummy_threading
 test_dynamic
 test_dynamicclassattribute
-test_eintr  platform-specific
+test_eintr
 test_email.test__encoded_words
 test_email.test__header_value_parser
 test_email.test_asian_codecs
@@ -177,7 +179,7 @@ test_ensurepip  nonsense
 test_enum       threading
 test_enumerate
 test_eof
-test_epoll  crash
+test_epoll
 test_errno
 test_exception_hierarchy
 test_exception_variations
@@ -200,7 +202,7 @@ test_fractions
 test_frame
 test_frozen
 test_fstring
-test_ftplib syscall 21537
+test_ftplib socket
 test_funcattrs
 test_functools  threading
 test_future
@@ -218,7 +220,7 @@ test_getargs2
 test_getopt
 test_getpass  permissions
 test_gettext
-test_glob     crash
+test_glob     fs
 test_global
 test_grammar
 test_grp
@@ -231,17 +233,17 @@ test_html
 test_htmlparser
 test_http_cookiejar
 test_http_cookies
-test_httplib  socket
+test_httplib  socket segfault-socketcall
 test_httpservers  threading
 test_idle
 test_imaplib  socket
 test_imghdr
-test_imp  crash
+test_imp  fs
 test_importlib.builtin.test_finder
 test_importlib.builtin.test_loader
 test_importlib.extension.test_case_sensitivity
-test_importlib.extension.test_finder  crash
-test_importlib.extension.test_loader  crash
+test_importlib.extension.test_finder  fs
+test_importlib.extension.test_loader  fs
 test_importlib.extension.test_path_hook
 test_importlib.frozen.test_finder
 test_importlib.frozen.test_loader
@@ -255,7 +257,7 @@ test_importlib.import_.test_packages
 test_importlib.import_.test_path
 test_importlib.import_.test_relative_imports
 test_importlib.source.test_case_sensitivity
-test_importlib.source.test_file_loader  unittest has no attribute mock
+test_importlib.source.test_file_loader
 test_importlib.source.test_finder
 test_importlib.source.test_path_hook
 test_importlib.source.test_source_encoding
@@ -270,12 +272,12 @@ test_importlib.test_read
 test_importlib.test_resource
 test_importlib.test_spec
 test_importlib.test_util
-test_importlib.test_windows platform-specific
+test_importlib.test_windows
 test_index
 test_inspect
 test_int
 test_int_literal
-test_io crash
+test_io  segfault-unknown
 test_ioctl
 test_ipaddress
 test_isinstance
@@ -303,7 +305,7 @@ test_keyword  subprocess
 test_keywordonlyarg
 test_kqueue
 test_largefile
-test_lib2to3  crash
+test_lib2to3  nonsense
 test_linecache
 test_list
 test_listcomps
@@ -313,16 +315,16 @@ test_long
 test_longexp
 test_lzma
 test_macpath  platform-specific
-test_mailbox  crash
+test_mailbox  fs
 test_mailcap  nonsense
 test_marshal
-test_math floating-point
+test_math floating point
 test_memoryio
 test_memoryview
 test_metaclass
 test_mimetypes
 test_minidom
-test_mmap
+test_mmap  crash
 test_module
 test_modulefinder
 test_msilib
@@ -346,21 +348,21 @@ test_os mmap
 test_ossaudiodev
 test_osx_env
 test_parser
-test_pathlib  crash
+test_pathlib  fs
 test_pdb      subprocess
 test_peepholer
 test_pickle dbm
 test_pickletools  dbm
 test_pipes        platform-specific
-test_pkg          unknown
+test_pkg
 test_pkgimport
 test_pkgutil
 test_platform   subprocess
 test_plistlib
 test_poll subprocess
 test_popen  subprocess
-test_poplib bad ioctl syscall 21537
-test_posix  crash
+test_poplib bad ioctl socket
+test_posix  segfault-fstatfs64
 test_posixpath  crash
 test_pow
 test_pprint
@@ -373,7 +375,7 @@ test_pulldom
 test_pwd  crash
 test_py_compile
 test_pyclbr
-test_pydoc  crash
+test_pydoc  threading
 test_pyexpat
 test_queue  threading
 test_quopri subprocess
@@ -395,8 +397,8 @@ test_sched  threading
 test_scope
 test_script_helper
 test_secrets
-test_select networking
-test_selectors  networking
+test_select networking  segfault-newselect
+test_selectors  networking segfault-newselect
 test_set
 test_setcomps
 test_shelve
@@ -406,7 +408,7 @@ test_signal
 test_site subprocess
 test_slice
 test_smtpd
-test_smtplib  baad ioctl syscall 21537
+test_smtplib  bad ioctl syscall 21537
 test_smtpnet
 test_sndhdr audioop
 test_socket
@@ -414,7 +416,7 @@ test_socketserver
 test_sort
 test_source_encoding  subprocess,
 test_spwd
-test_sqlite
+test_sqlite threading
 test_ssl
 test_startfile
 test_stat
@@ -431,9 +433,9 @@ test_structseq
 test_subclassinit
 test_subprocess
 test_sunau  audioop
-test_sundry nonsense
+test_sundry
 test_super
-test_support  crash
+test_support  multiprocessing
 test_symbol
 test_symtable
 test_syntax
@@ -445,7 +447,7 @@ test_syslog
 test_tarfile  crash
 test_tcl
 test_telnetlib  bad ioctl syscall 21537
-test_tempfile crash
+test_tempfile   fs
 test_textwrap
 test_thread threading
 test_threaded_import  floating point
@@ -477,10 +479,10 @@ test_tuple
 test_turtle
 test_typechecks
 test_types
-test_typing unknown
+test_typing
 test_ucn
 test_unary
-test_unicode  crash
+test_unicode
 test_unicode_file
 test_unicode_file_functions
 test_unicode_identifiers
@@ -489,7 +491,7 @@ test_unittest os.kill
 test_univnewlines
 test_unpack
 test_unpack_ex
-test_urllib crash
+test_urllib segfault-socketcall
 test_urllib2  subprocess
 test_urllib2_localnet socket
 test_urllib2net
@@ -503,10 +505,10 @@ test_utf8_mode
 test_utf8source
 test_uu
 test_uuid subprocess
-test_venv crash
+test_venv nonsense
 test_wait3  threading
 test_wait4  threading
-test_wave crash
+test_wave   audioop
 test_weakref  threading
 test_weakset
 test_webbrowser replaced

@@ -41,6 +41,13 @@ expect Conda packages to "just work" with Pyodide. (In the longer term, Pyodide
 may use conda as its packaging system, and this should hopefully ease that
 transition.)
 
+There is a helper tool that will generate a `meta.yaml` for packages on PyPI
+that will work for many pure Python packages. This tool will populate the latest
+version, download link and sha256 hash by querying PyPI. It doesn't currently
+handle package dependencies. To run it, do:
+
+`bin/pyodide mkpkg $PACKAGE_NAME`
+
 The supported keys in the `meta.yaml` file are described below.
 
 ### `package`
@@ -89,6 +96,17 @@ which the `meta.yaml` file resides. The `dst` path is relative to the root of
 source tree (the expanded tarball).
 
 ### `build`
+
+#### `build/skip_host`
+
+Skip building C extensions for the host environment. Default: `True`.
+
+Setting this to `False` will result in ~2x slower builds for packages that
+include C extensions. It should only be needed when a package is a build
+time dependency for other packages. For instance, numpy is imported during
+installation of matplotlib, importing numpy also imports included C extensions,
+therefore it is built both for host and target.
+
 
 #### `build/cflags`
 

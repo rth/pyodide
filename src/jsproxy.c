@@ -62,6 +62,11 @@ JsProxy_GetAttr(PyObject* o, PyObject* attr_name)
   int idresult = hiwire_get_member_string(self->js, (int)key);
   Py_DECREF(str);
 
+  if (idresult == -1) {
+    PyErr_SetString(PyExc_AttributeError, key);
+    return NULL;
+  }
+
   if (hiwire_is_function(idresult)) {
     hiwire_decref(idresult);
     return JsBoundMethod_cnew(self->js, key);
@@ -108,6 +113,12 @@ JsProxy_Call(PyObject* o, PyObject* args, PyObject* kwargs)
     int idarg = python2js(PyTuple_GET_ITEM(args, i));
     hiwire_push_array(idargs, idarg);
     hiwire_decref(idarg);
+  }
+
+  if (PyDict_Size(kwargs)) {
+    int idkwargs = python2js(kwargs);
+    hiwire_push_array(idargs, idkwargs);
+    hiwire_decref(idkwargs);
   }
 
   int idresult = hiwire_call(self->js, idargs);
@@ -169,8 +180,16 @@ JsProxy_RichCompare(PyObject* a, PyObject* b, int op)
 static PyObject*
 JsProxy_GetIter(PyObject* o)
 {
-  Py_INCREF(o);
-  return o;
+  JsProxy* self = (JsProxy*)o;
+
+  int iditer = hiwire_get_iterator(self->js);
+
+  if (iditer == HW_ERROR) {
+    PyErr_SetString(PyExc_TypeError, "Object is not iterable");
+    return NULL;
+  }
+
+  return js2python(iditer);
 }
 
 static PyObject*
@@ -186,13 +205,15 @@ JsProxy_IterNext(PyObject* o)
   int iddone = hiwire_get_member_string(idresult, (int)"done");
   int done = hiwire_nonzero(iddone);
   hiwire_decref(iddone);
-  if (done) {
-    return NULL;
+
+  PyObject* pyvalue = NULL;
+  if (!done) {
+    int idvalue = hiwire_get_member_string(idresult, (int)"value");
+    pyvalue = js2python(idvalue);
+    hiwire_decref(idvalue);
   }
 
-  int idvalue = hiwire_get_member_string(idresult, (int)"value");
-  PyObject* pyvalue = js2python(idvalue);
-  hiwire_decref(idvalue);
+  hiwire_decref(idresult);
   return pyvalue;
 }
 
@@ -234,6 +255,10 @@ JsProxy_subscript(PyObject* o, PyObject* pyidx)
   int ididx = python2js(pyidx);
   int idresult = hiwire_get_member_obj(self->js, ididx);
   hiwire_decref(ididx);
+  if (idresult == -1) {
+    PyErr_SetObject(PyExc_KeyError, pyidx);
+    return NULL;
+  }
   PyObject* pyresult = js2python(idresult);
   hiwire_decref(idresult);
   return pyresult;
@@ -358,6 +383,17 @@ JsProxy_HasBytes(PyObject* o)
   }
 }
 
+static PyObject*
+JsProxy_Dir(PyObject* o)
+{
+  JsProxy* self = (JsProxy*)o;
+
+  int iddir = hiwire_dir(self->js);
+  PyObject* pydir = js2python(iddir);
+  hiwire_decref(iddir);
+  return pydir;
+}
+
 // clang-format off
 static PyMappingMethods JsProxy_MappingMethods = {
   JsProxy_length,
@@ -375,10 +411,18 @@ static PyMethodDef JsProxy_Methods[] = {
     (PyCFunction)JsProxy_New,
     METH_VARARGS | METH_KEYWORDS,
     "Construct a new instance" },
+  { "__iter__",
+    (PyCFunction)JsProxy_GetIter,
+    METH_NOARGS,
+    "Get an iterator over the object" },
   { "_has_bytes",
     (PyCFunction)JsProxy_HasBytes,
     METH_NOARGS,
     "Returns true if instance has buffer memory. For testing only." },
+  { "__dir__",
+    (PyCFunction)JsProxy_Dir,
+    METH_NOARGS,
+    "Returns a list of the members and methods on the object." },
   { NULL }
 };
 // clang-format on
@@ -416,12 +460,10 @@ JsProxy_cnew(int idobj)
 //
 // A special class for bound methods
 
-const size_t BOUND_METHOD_NAME_SIZE = 256;
-
 typedef struct
 {
   PyObject_HEAD int this_;
-  char name[BOUND_METHOD_NAME_SIZE];
+  const char* name;
 } JsBoundMethod;
 
 static void
@@ -469,7 +511,7 @@ JsBoundMethod_cnew(int this_, const char* name)
   JsBoundMethod* self;
   self = (JsBoundMethod*)JsBoundMethodType.tp_alloc(&JsBoundMethodType, 0);
   self->this_ = hiwire_incref(this_);
-  strncpy(self->name, name, BOUND_METHOD_NAME_SIZE);
+  self->name = name;
   return (PyObject*)self;
 }
 

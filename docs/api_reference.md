@@ -42,6 +42,21 @@ some preprocessing on the Python code first.
 
 Either the resulting object or `None`.
 
+### pyodide.as_nested_list(obj)
+
+Converts Javascript nested arrays to Python nested lists. This conversion can not
+be performed automatically, because Javascript Arrays and Objects can be combined
+in ways that are ambiguous.
+
+*Parameters*
+
+| name   | type  | description           |
+|--------|-------|-----------------------|
+| *obj*  | JS Object | The object to convert |
+
+*Returns*
+
+The object as nested Python lists.
 
 ## Javascript API
 
@@ -49,27 +64,27 @@ Either the resulting object or `None`.
 
 Load a package or a list of packages over the network.
 
-This makes the files for the package available in the virtual filesystem.  
+This makes the files for the package available in the virtual filesystem.
 The package needs to be imported from Python before it can be used.
 
 *Parameters*
 
-| name    | type            | description                           |
-|---------|-----------------|---------------------------------------|
-| *names* | {String, Array} | package name, or URL. Can be either a single element, or an array.          |
-
+| name              | type            | description                           |
+|-------------------|-----------------|---------------------------------------|
+| *names*           | {String, Array} | package name, or URL. Can be either a single element, or an array.          |
+| *messageCallback* | function        | A callback, called with progress messages. (optional) |
 
 *Returns*
 
-Loading is asynchronous, therefore, this returns a promise.
+Loading is asynchronous, therefore, this returns a `Promise`.
 
 
-### pyodide.loadedPackage
+### pyodide.loadedPackages
 
 `Array` with loaded packages.
 
-Use `Object.keys(pyodide.loadedPackage)` to access the names of the
-loaded packages, and `pyodide.loadedPackage[package_name]` to access
+Use `Object.keys(pyodide.loadedPackages)` to access the names of the
+loaded packages, and `pyodide.loadedPackages[package_name]` to access
 install location for a particular `package_name`.
 
 ### pyodide.pyimport(name)
@@ -98,6 +113,14 @@ For example, to access the `foo` Python object from Javascript:
 |           |         | types, a Proxy object to the Python   |
 |           |         | object is returned.                   |
 
+### pyodide.globals
+
+An object whose attributes are members of the Python global namespace. This is a
+more convenient alternative to `pyodide.pyimport`.
+
+For example, to access the `foo` Python object from Javascript:
+
+   `pyodide.globals.foo`
 
 ### pyodide.repr(obj)
 
@@ -137,11 +160,48 @@ Runs a string of code. The last part of the string may be an expression, in whic
 | *jsresult* | *any*   | Result, converted to Javascript |
 
 
+### pyodide.runPythonAsync(code, messageCallback)
+
+Runs Python code, possibly asynchronously loading any known packages that the code
+chunk imports.
+
+For example, given the following code chunk
+
+```python
+import numpy as np
+x = np.array([1, 2, 3])
+```
+
+pyodide will first call `pyodide.loadPackage(['numpy'])`, and then run the code
+chunk, returning the result. Since package fetching must happen asynchronously,
+this function returns a `Promise` which resolves to the output. For example, to
+use:
+
+```javascript
+pyodide.runPythonAsync(code, messageCallback)
+  .then((output) => handleOutput(output))
+```
+
+*Parameters*
+
+| name              | type     | description                    |
+|-------------------|----------|--------------------------------|
+| *code*            | String   | Python code to evaluate        |
+| *messageCallback* | function | Callback given status messages |
+|                   |          | (optional)                     |
+
+*Returns*
+
+| name       | type    | description                              |
+|------------|---------|------------------------------------------|
+| *result*   | Promise | Resolves to the result of the code chunk |
+
+
 ### pyodide.version()
 
 Returns the pyodide version.
 
-It can be either the exact release version (e.g. `0.1.0`), or 
+It can be either the exact release version (e.g. `0.1.0`), or
 the latest release version followed by the number of commits since, and
 the git hash of the current commit (e.g. `0.1.0-1-bd84646`).
 
@@ -154,4 +214,3 @@ None
 | name      | type   | description            |
 |-----------|--------|------------------------|
 | *version* | String | Pyodide version string |
-

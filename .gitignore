@@ -8,6 +8,8 @@
 .pytest_cache/
 __pycache__
 geckodriver.log
+firefox/
+.vscode
 
 build
 downloads
@@ -22,3 +24,6 @@ ccache
 
 /six/six-1.11.0
 /lz4/lz4-1.8.3
+CLAPACK/CLAPACK-WA
+CLAPACK/clapack.tgz
+*.egg-info/
