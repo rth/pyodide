@@ -12,11 +12,11 @@ emsdk/.complete:
 	sed -i -e "s#CPU_CORES = max(multiprocessing.cpu_count()-1, 1)#CPU_CORES = 3#g" emsdk/emsdk
 	( \
 		cd emsdk && \
-		./emsdk install --build=Release $(EMSCRIPTEN_VERSION) && \
+		./emsdk install --build=Release $(EMSCRIPTEN_VERSION)-upstream && \
 		cd .. && \
 		(cat patches/*.patch | patch -p1) && \
                 cd emsdk && \
-		./emsdk activate --embedded --build=Release $(EMSCRIPTEN_VERSION) && \
+		./emsdk activate --embedded --build=Release $(EMSCRIPTEN_VERSION)-upstream && \
     		touch .complete \
 	)
 

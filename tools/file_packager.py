@@ -77,7 +77,7 @@ import ctypes
 
 emscripten_dir = os.path.join(
   os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-  'emsdk', 'emsdk', 'fastcomp', 'emscripten'
+  'emsdk', 'emsdk', 'upstream', 'emscripten'
 )
 sys.path.insert(1, emscripten_dir)
 

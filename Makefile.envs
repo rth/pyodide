@@ -1,11 +1,11 @@
 export EMSCRIPTEN_VERSION = 1.38.36
 
-export PATH := $(PYODIDE_ROOT)/ccache:$(PYODIDE_ROOT)/emsdk/emsdk:$(PYODIDE_ROOT)/emsdk/emsdk/fastcomp/emscripten/:$(PYODIDE_ROOT)/emsdk/emsdk/node/8.9.1_64bit/bin:$(PYODIDE_ROOT)/emsdk/emsdk/binaryen/tag-$(EMSCRIPTEN_VERSION)_64bit_binaryen/bin:$(PATH)
+export PATH := $(PYODIDE_ROOT)/ccache:$(PYODIDE_ROOT)/emsdk/emsdk:$(PYODIDE_ROOT)/emsdk/emsdk/upstream/emscripten/:$(PYODIDE_ROOT)/emsdk/emsdk/node/8.9.1_64bit/bin:$(PYODIDE_ROOT)/emsdk/emsdk/binaryen/tag-$(EMSCRIPTEN_VERSION)_64bit_binaryen/bin:$(PATH)
 
 export EMSDK = $(PYODIDE_ROOT)/emsdk/emsdk
 export EM_CONFIG = $(PYODIDE_ROOT)/emsdk/emsdk/.emscripten
 export EM_CACHE = $(PYODIDE_ROOT)/emsdk/emsdk/.emscripten_cache
-export EMSCRIPTEN = $(PYODIDE_ROOT)/emsdk/emsdk/fastcomp/emscripten/
+export EMSCRIPTEN = $(PYODIDE_ROOT)/emsdk/emsdk/upstream/emscripten/
 export BINARYEN_ROOT = $(PYODIDE_ROOT)/emsdk/emsdk/binaryen/tag-$(EMSCRIPTEN_VERSION)_64bit_binaryen
 
 export PYVERSION=3.7.0
