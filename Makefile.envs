@@ -16,13 +16,12 @@ export TARGETPYTHONROOT=$(PYODIDE_ROOT)/cpython/installs/python-$(PYVERSION)
 export PYTHONINCLUDE=$(PYODIDE_ROOT)/cpython/installs/python-$(PYVERSION)/include/python$(PYMINOR)
 
 export PYODIDE_PACKAGE_ABI=1
+export EMCC_WASM_BACKEND=1
 
 export SIDE_LDFLAGS=\
 	-O3 \
   -s "BINARYEN_METHOD='native-wasm'" \
 	-Werror \
-  -s EMULATED_FUNCTION_POINTERS=1 \
-  -s EMULATE_FUNCTION_POINTER_CASTS=1 \
   -s SIDE_MODULE=1 \
 	-s WASM=1 \
   -s "BINARYEN_TRAP_MODE='clamp'" \
