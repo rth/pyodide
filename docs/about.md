@@ -1,9 +1,9 @@
 # About the Project
 
-The Python scientific stack, compiled to WebAssembly.
+CPython and the Python scientific stack, compiled to WebAssembly.
 
-Pyodide brings the Python runtime to the browser via WebAssembly, along with
-the Python scientific stack including NumPy, Pandas, Matplotlib, parts of
+Pyodide brings the Python 3.8 runtime to the browser via WebAssembly, along
+with the Python scientific stack including NumPy, Pandas, Matplotlib, parts of
 SciPy, and NetworkX. The [packages
 directory](https://github.com/iodide-project/pyodide/tree/master/packages)
 lists over 35 packages which are currently available.

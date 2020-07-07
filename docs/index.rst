@@ -6,7 +6,7 @@
 Pyodide
 =======
 
-The Python scientific stack, compiled to WebAssembly.
+CPython and the Python scientific stack, compiled to WebAssembly.
 
 .. note::
 
