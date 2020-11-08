@@ -8,6 +8,7 @@ import argparse
 import json
 from pathlib import Path
 import shutil
+import os
 
 from . import common
 from . import buildpkg
@@ -32,9 +33,14 @@ def build_package(pkgname, dependencies, packagesdir, outputdir, args):
 def build_packages(packagesdir, outputdir, args):
     # We have to build the packages in the correct order (dependencies first),
     # so first load in all of the package metadata and build a dependency map.
-    dependencies = {}
     import_name_to_package_name = {}
     included_packages = common._parse_package_subset(args.only)
+
+    db = {"info": {"arch": "x86-JS", "platform": "Emscripten"}, "packages": {}}
+
+    for key, env_key in [("python", "PYVERSION"), ("emscripten", "EMSCRIPTEN_VERSION")]:
+        db["info"][key] = os.environ.get(env_key, "")
+
     if included_packages is not None:
         # check that the specified packages exist
         for name in included_packages:
@@ -54,30 +60,42 @@ def build_packages(packagesdir, outputdir, args):
 
         pkgpath = pkgdir / "meta.yaml"
         if pkgdir.is_dir() and pkgpath.is_file():
+            pkg_meta = {}
             pkg = common.parse_package(pkgpath)
             name = pkg["package"]["name"]
-            reqs = pkg.get("requirements", {}).get("run", [])
-            dependencies[name] = reqs
+            for key in ["name", "version"]:
+                pkg_meta[key] = pkg["package"][key]
+
+            pkg_meta["depends"] = pkg.get("requirements", {}).get("run", [])
             imports = pkg.get("test", {}).get("imports", [name])
             for imp in imports:
                 import_name_to_package_name[imp] = name
+            db["packages"][name] = pkg_meta
 
-    for pkgname in dependencies.keys():
-        build_package(pkgname, dependencies, packagesdir, outputdir, args)
+    dependency_tree = {
+        name: package["depends"] for name, package in db["packages"].items()
+    }
+    for pkgname, package in db["packages"].items():
+        # We make recursive calls to build_package in order to build dependencies first.
+        build_package(pkgname, dependency_tree, packagesdir, outputdir, args)
 
     # The "test" package is built in a different way, so we hardcode its
     # existence here.
-    dependencies["test"] = []
+    db["packages"]["test"] = {"name": "test", "version": "0.0.0"}
+
+    for pkgname, package in db["packages"].items():
+        db["packages"][pkgname]["size"] = {
+            "js": os.path.getsize(outputdir / f"{pkgname}.js"),
+            "data": os.path.getsize(outputdir / f"{pkgname}.data"),
+        }
+
+    #         db['packages'][pkgname]['sha256'] =
+
+    db["import_name_to_package_name"] = import_name_to_package_name
 
     # This is done last so the Makefile can use it as a completion token.
     with open(outputdir / "packages.json", "w") as fd:
-        json.dump(
-            {
-                "dependencies": dependencies,
-                "import_name_to_package_name": import_name_to_package_name,
-            },
-            fd,
-        )
+        json.dump(db, fd)
 
 
 def make_parser(parser):
