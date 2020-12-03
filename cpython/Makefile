@@ -135,7 +135,7 @@ $(BUILD)/Makefile: $(BUILD)/.patched $(ZLIBBUILD)/.patched $(SQLITEBUILD)/libsql
 	)
 
 
-$(BUILD)/$(LIB): $(BUILD)/Makefile $(HOSTPYTHON) $(HOSTPGEN) Setup.local
+$(BUILD)/$(LIB): $(BUILD)/Makefile $(HOSTPYTHON) $(HOSTPGEN) Setup.local pyconfig.undefs.h
 	cp Setup.local $(BUILD)/Modules/
 	cat pyconfig.undefs.h >> $(BUILD)/pyconfig.h
 	( \
