@@ -108,6 +108,10 @@ jobs:
           - -{{ checksum "Makefile.envs" }}-v20201205-
 
       - run:
+          name: Install dependencies
+          command: pip install requests
+
+      - run:
           name: build packages
           no_output_timeout: 1800
           command: |
