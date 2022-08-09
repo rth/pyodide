@@ -126,6 +126,11 @@ particularly since we are not able to check the file integrity, unlike with
 installs from PyPI. See [this stack overflow answer](https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-header-is-present-on-the-requested-resource-whe/43881141#43881141) for more information about CORS.
 ```
 
+### Using lock file with micropip.freeze
+
+While it's convinient to load packages from PyPi, it involves several requests to PyPi to get the package metadata, packages, and compatible dependencies.
+One way to 
+
 ## Example
 
 ```html
