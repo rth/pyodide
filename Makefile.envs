@@ -80,7 +80,7 @@ ifdef PYODIDE_ASSERTIONS
 endif
 
 
-export OPTFLAGS=-O2
+export OPTFLAGS=-Os
 export CFLAGS_BASE=\
 	$(OPTFLAGS) \
 	$(DBGFLAGS) \
