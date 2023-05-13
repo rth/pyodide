@@ -1,0 +1,13 @@
+package:
+  name: pyarrow
+  version: 12.0.0
+  top-level:
+    - pyarrow
+source:
+  url: https://files.pythonhosted.org/packages/98/52/ccf4f4c6f70fcd67767faaf23db3cbc5f766af9c4aeaf3961adfbf22f126/pyarrow-12.0.0.tar.gz
+  sha256: 19c812d303610ab5d664b7b1de4051ae23565f9f94d04cbea9e50569746ae1ee
+about:
+  home: https://arrow.apache.org/
+  PyPI: https://pypi.org/project/pyarrow
+  summary: Python library for Apache Arrow
+  license: Apache License, Version 2.0
