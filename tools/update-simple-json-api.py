@@ -7,9 +7,8 @@ from typing import Any
 
 import boto3
 import pydantic
-from pyodide_lock.spec import PyodideLockSpec
-
 from packaging.utils import canonicalize_name
+from pyodide_lock.spec import PyodideLockSpec
 
 CDN_URL = "https://cdn.jsdelivr.net/pyodide/v{version}/full/"
 
@@ -81,7 +80,8 @@ def create_project_json(db: list[PyodideLockSpec], name: str) -> dict[str, Any]:
             "requires-python": "==" + ".".join(lock.info.python.split(".")[:2]),
         }
         files.append(entry)
-    res["files"] = files
+    # Re-order so that the newest patch releases are picked by pip first
+    res["files"] = files[::-1]
     return res
 
 
@@ -107,7 +107,7 @@ def main(bucket_name: str = "pyodide-pypi-api"):
         tmp_dir / "index.json",
         bucket_name,
         "simple/",
-        ExtraArgs={"ContentType": "application/vnd.pypi.simple.1.0+json"},
+        ExtraArgs={"ContentType": "application/vnd.pypi.simple.v1+json"},
     )
 
     print(f"Uploading index for {len(projects)} projects:")
@@ -123,7 +123,7 @@ def main(bucket_name: str = "pyodide-pypi-api"):
             tmp_dir / project_normalized / "index.json",
             bucket_name,
             f"simple/{project_normalized}/",
-            ExtraArgs={"ContentType": "application/vnd.pypi.simple.1.0+json"},
+            ExtraArgs={"ContentType": "application/vnd.pypi.simple.v1+json"},
         )
         print(".", end="", flush=True)
         if idx % 20 == 0:
