@@ -55,7 +55,10 @@ def create_main_json(db: list[PyodideLockSpec]) -> dict[str, Any]:
         projects.update(lock.packages.keys())
     res = {
         "meta": {"api-version": "1.0"},
-        "projects": list(sorted(canonicalize_name(name) for name in projects)),
+        "projects": [
+            {"name": key}
+            for key in list(sorted(canonicalize_name(name) for name in projects))
+        ],
     }
     return res, projects
 
